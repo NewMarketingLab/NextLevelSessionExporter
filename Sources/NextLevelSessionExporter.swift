@@ -384,11 +384,17 @@ extension NextLevelSessionExporter {
     }
     
     private func setupAudioOutput(withAsset asset: AVAsset) {
-        let audioTracks = asset.tracks(withMediaType: AVMediaType.audio)
+        var audioTracks = asset.tracks(withMediaType: AVMediaType.audio)
         
         guard audioTracks.count > 0 else {
             self._audioOutput = nil
             return
+        }
+        
+        // iPhone 16 Pro has 2 tracks for audio... first is a stereo track, and second is an APAC track... supposedly 4-channel spacial audio, but there's very little info on this. Reddit has the most info I can find: https://www.reddit.com/r/audiophile/comments/1fncalk/what_is_the_apac_audio_format_as_listed_in_the/
+        // Ideally we should support the spacial audio... but for now we're fixing the bug by simply ignoring the second audio channel
+        if audioTracks.count > 1 {
+            audioTracks = [audioTracks.first!]
         }
 
         self._audioOutput = AVAssetReaderAudioMixOutput(audioTracks: audioTracks, audioSettings: nil)
