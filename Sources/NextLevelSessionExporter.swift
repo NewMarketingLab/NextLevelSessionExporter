@@ -87,6 +87,9 @@ open class NextLevelSessionExporter: NSObject {
     /// Video output configuration dictionary, using keys defined in `<AVFoundation/AVVideoSettings.h>`
     public var videoOutputConfiguration: [String : Any]?
     
+    /// Using this as a bug fix for now... our other approach failed because the key AVVideoAverageNonDroppableFrameRateKey didn't work for HEVC video... caused the "Unsupported output configuration" error because this fails: writer?.canApply(outputSettings: self.videoOutputConfiguration, forMediaType: AVMediaType.video)
+    public var videoOutputFPS: Float?
+    
     /// Audio output configuration dictionary, using keys defined in `<AVFoundation/AVAudioSettings.h>`
     public var audioOutputConfiguration: [String : Any]?
     
@@ -484,7 +487,9 @@ extension NextLevelSessionExporter {
             // determine the framerate
             
             var frameRate: Float = 0
-            if let videoConfiguration = self.videoOutputConfiguration {
+            if let videoOutputFPS = videoOutputFPS {
+                frameRate = videoOutputFPS ////
+            } else if let videoConfiguration = self.videoOutputConfiguration {
                 if let videoCompressionConfiguration = videoConfiguration[AVVideoCompressionPropertiesKey] as? [String: Any] {
                     if let trackFrameRate = videoCompressionConfiguration[AVVideoAverageNonDroppableFrameRateKey] as? NSNumber {
                         frameRate = trackFrameRate.floatValue
